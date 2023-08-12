@@ -26,11 +26,6 @@ For this project solution you may use:
 - Conditionals
 - Repetitions
 
-Additional contents:
-
-- [Python: RECURSION Explained (video)](https://www.youtube.com/watch?v=wMNrSM5RFMc)
-- [Recursion for Beginners: A Beginner's Guide to Recursion (video)](https://www.youtube.com/watch?v=AfBqVVKg4GE)
-- [Recursion, the Fibonacci Sequence and Memoization (video)](https://www.youtube.com/watch?v=Qk0zUZW-U_M)
 
 # Deadline
 
