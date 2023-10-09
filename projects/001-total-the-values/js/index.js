@@ -1,5 +1,4 @@
 'use strict';
-
 function getSum() {
     let num = parseFloat(
         prompt(
