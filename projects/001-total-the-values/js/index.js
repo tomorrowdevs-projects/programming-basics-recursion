@@ -17,8 +17,8 @@ const prompt = require('prompt-sync')();
 // }
 // console.log(getSum());
 /**
- * La funzione richiede all'utente di inserire alcuni numeri e di interrompere premendo invio sulla tastiera
- * @returns la somma dei numeri inseriti dall'utente
+ * The function prompts the user to enter some numbers and interrupt by pressing enter on the keyboard
+ * @returns the sum of the numbers entered by the user
  */
 function getSum() {
     const value = prompt('Enter a value');
