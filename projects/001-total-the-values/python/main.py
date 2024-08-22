@@ -8,5 +8,5 @@ def main():
     count=sum_of_numbers()
     print(count)
 
-if __name__='__main__':
+if __name__=='__main__':
     main()
