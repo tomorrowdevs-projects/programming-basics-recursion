@@ -5,11 +5,10 @@ def text_compression(text):
     for i in range(len(text)):
         if text[i]==text[0]:
             comp_txt_ls[1]+=1
+            if i==len(text)-1:
+                return comp_txt_ls
         else:
             return comp_txt_ls+text_compression(text[i:])
-    
-    if len(text)==1:
-        return comp_txt_ls
 
 def main():
     text=input('Please, enter a text to be compressed:')
