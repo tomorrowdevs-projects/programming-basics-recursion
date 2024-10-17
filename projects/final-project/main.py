@@ -168,11 +168,14 @@ def DicContent(MainDic):
     Content=[]
     for Id in MainDic:
         if type(MainDic[Id])==dict:
-            Content.append(Id)
-            Content+DicContent(MainDic[Id])
+            if len(MainDic[Id])>0:
+                Content.append(Id)
+                Content=Content+DicContent(MainDic[Id])
+            else:
+                Content.append(Id)
         else:
             Content.append(Id)
-    return Content  
+    return Content 
 
 def DeleteRoom():
     #ASKING FOR ROOM ID TO DELETE
@@ -265,14 +268,17 @@ def SetHouseRooms():
                 ModifyRoom()
         PrintIdDic(RoomIdDic)
 
-def RootFinder(ObjId):
-    RootList=[]
-    ContainerId=ObjIdDic[ObjId]['Place']
-    RootList.append(ContainerId)
-    if 'R' in ContainerId:
-        return RootList
+def RootFinder(Id):
+    if 'R' in Id:
+        return Id
     else:
-        return RootList+RootFinder(ContainerId)
+        RootList=[]
+        ContainerId=ObjIdDic[Id]['Place']
+        RootList.append(ContainerId)
+        if 'R' in ContainerId:
+            return RootList
+        else:
+            return RootList+RootFinder(ContainerId)
 
 def GoToRoot(RootList):
     Container=HouseDic
@@ -378,11 +384,11 @@ def ModifyObject():
                 HouseDic[DestRoomId][ObjId]=None
             ObjIdDic[ObjId]['Place']=DestRoomId
     else:
+        RootList=RootFinder(ObjId)
+        RootList.reverse()
+        Container=GoToRoot(RootList)
         if ObjIdDic[ObjId]['Container']:
-            RootList=RootFinder(ObjId)
-            RootList.reverse()
-            Container=GoToRoot(RootList)
-            if len(Container)>0:
+            if len(Container[ObjId])>0:
                 Operation=input('The object contains other objects! Do you want to move all the objects (1) or you want to abort (2)?')
                 while not Operation in ['1','2']:
                     print('Wrong input, retry!')
@@ -406,43 +412,110 @@ def ModifyObject():
                         ObjIdDic[Id]['Place']=DestId
                     NewPlace.update(Container[ObjId])
                     Container[ObjId]=None
+                    ObjIdDic[ObjId]['Container']=False
                 else:
                     print('Modification aborted!')
                     pass
+            else:
+                Container[ObjId]=None
+                ObjIdDic[ObjId]['Container']=False
         else:
-            ObjIdDic[ObjId]['Cotainer']=False
+            RootList=RootFinder(ObjId)
+            RootList.reverse()
+            Container=GoToRoot(RootList)
+            Container[ObjId]={}
+            ObjIdDic[ObjId]['Container']=True
+
+def DeleteObject(ObjId=None):
+    if ObjId==None:
+        PrintIdDic(ObjIdDic)
+        ObjId=input('Please, enter the id of the object to be deleted: ')
+        while not ObjId in ObjIdDic:
+            Operation=input('Sorry! Wrong input, retry: ')
+            ObjId=input('Please, enter the id of the object to be deleted: ')
+    
+    RootList=RootFinder(ObjId)
+    RootList.reverse()
+    Container=GoToRoot(RootList)
+    if ObjIdDic[ObjId]['Container']:
+        if len(Container[ObjId])>0:
+            Operation=input('The object is not empty! You can:\n- move all objects to another place [1]\n- delete the object and its content [2]\n- abort the deletion [3]\nEnter ther number of the operation you want to perform: ')
+            while not Operation in ['1','2','3']:
+                print('Wrong input, retry!')
+                Operation=input('The object is not empty! You can:\n- move all objects to another place [1]\n- delete the object and its content [2]\n- abort the deletion [3]\nEnter ther number of the operation you want to perform: ')
+            
+            if Operation=='1':
+                PrintIdDic(RoomIdDic)
+                PrintIdDic(ObjIdDic)
+                DestId=input('Enter the id of the destination place: ')
+                if 'R' in DestId:
+                    NewPlace=HouseDic[DestId]
+                else:
+                    NewRootList=RootFinder(DestId)
+                    NewPlace=GoToRoot(NewRootList)[DestId]
+                    while type(NewPlace)!=dict:
+                        print('You choosed a non container object, please retry!')
+                        DestId=input('Enter the id of the destination place: ')
+                        NewRootList=RootFinder(DestId)
+                        if 'R' in DestId:
+                            NewPlace=HouseDic[DestId]
+                        else:
+                            NewPlace=GoToRoot(NewRootList)[DestId]
+                for Id in Container[ObjId]:
+                    ObjIdDic[Id]['Place']=DestId
+                NewPlace.update(Container[ObjId])
+                del(ObjIdDic[ObjId])
+                del(Container[ObjId])
+            elif Operation=='2':
+                Content=DicContent(Container[ObjId])
+                for Id in Content:
+                    del(ObjIdDic[Id])
+                del(ObjIdDic[ObjId])
+                del(Container[ObjId])
+            else:
+                print('Deletion aborted!')
+                pass
+        else:
+            del(ObjIdDic[ObjId])
+            del(Container[ObjId])
+    else:
+        RootList=RootFinder(ObjId)
+        RootList.reverse()
+        Container=GoToRoot(RootList)
+        del(ObjIdDic[ObjId])
+        del(Container[ObjId])
 
 def main():
-    print('HOUSEHOLD CATALOG MANAGER')
-    SetHouseRooms()
-    Operation=''
-    Operation=input('You can:\n- Explore house [1]\n- Modify rooms [2]\n- Add an object [3]\n- Modify an object [4]\n- Delete an object [5]\n\nChoose the operation you want to perform or enter 0 to exit: ')
-    while not Operation=='0':
-        if Operation=='1':
-            Explore(HouseDic)
-        elif Operation=='2':
-            SetHouseRooms()
-        elif Operation=='3':
-            AddObject()
-        elif Operation=='4':
-            ModifyObject()
-        else:
-            pass
-
-    #---    DEBUG   ---#
+    # print('HOUSEHOLD CATALOG MANAGER')
     # SetHouseRooms()
-    # HouseDic['R2']['O1']={}
-    # ObjIdDic['O1']={'Name':'FirstObj','Place':'R2','Container':True}
-    # HouseDic['R3']['O2']=None
-    # ObjIdDic['O2']={'Name':'SecondObj','Place':'R3','Container':False}
-    # HouseDic['R2']['O1']['O3']={}
-    # ObjIdDic['O3']={'Name':'ThirdObj','Place':'O1','Container':True}
-    # HouseDic['R2']['O1']['O3']['O4']=None
-    # ObjIdDic['O4']={'Name':'FourthObj','Place':'O3','Container':False}
-    # print(HouseDic)
-    # ModifyObject()
-    # print(HouseDic)
-    # print(ObjIdDic)
+    # Operation=''
+    # Operation=input('You can:\n- Explore house [1]\n- Modify rooms [2]\n- Add an object [3]\n- Modify an object [4]\n- Delete an object [5]\n\nChoose the operation you want to perform or enter 0 to exit: ')
+    # while not Operation=='0':
+    #     if Operation=='1':
+    #         Explore(HouseDic)
+    #     elif Operation=='2':
+    #         SetHouseRooms()
+    #     elif Operation=='3':
+    #         AddObject()
+    #     elif Operation=='4':
+    #         ModifyObject()
+    #     else:
+    #         DeleteObject()
+
+    SetHouseRooms()
+    HouseDic['R2']['O1']={}
+    ObjIdDic['O1']={'Name':'FirstObj','Place':'R2','Container':True}
+    HouseDic['R3']['O2']=None
+    ObjIdDic['O2']={'Name':'SecondObj','Place':'R3','Container':False}
+    HouseDic['R2']['O1']['O3']={}
+    ObjIdDic['O3']={'Name':'ThirdObj','Place':'O1','Container':True}
+    HouseDic['R2']['O1']['O3']['O4']=None
+    ObjIdDic['O4']={'Name':'FourthObj','Place':'O3','Container':False}
+    print(HouseDic)
+    Content=DicContent(HouseDic['R2'])
+    DeleteObject()
+    print(HouseDic)
+    print(ObjIdDic)
 
 if __name__=='__main__':
     main()
