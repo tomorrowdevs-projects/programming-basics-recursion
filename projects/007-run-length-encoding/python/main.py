@@ -1,19 +1,27 @@
-def text_compression(text):
-    comp_txt_ls=[]
-    comp_txt_ls.append(text[0])
-    comp_txt_ls.append(0)
-    for i in range(len(text)):
-        if text[i]==text[0]:
-            comp_txt_ls[1]+=1
-            if i==len(text)-1:
-                return comp_txt_ls
+def textCompression(text,compressedText=None):
+    if compressedText==None:
+        compressedText=[]
+
+    if len(text)>0:
+        if type(text)==list:
+            currentElem=text.pop(0)
         else:
-            return comp_txt_ls+text_compression(text[i:])
+            currentElem=text[0]
+            text=text[1:]
+        if not currentElem in compressedText:
+            compressedText.append(currentElem)
+            compressedText.append(1)
+        else:
+            charIndex=compressedText.index(currentElem)
+            compressedText[charIndex+1]+=1
+        return textCompression(text,compressedText)
+    else:
+        return compressedText
 
 def main():
     text=input('Please, enter a text to be compressed:')
-    comp_txt_ls=text_compression(text)
-    print('Text: {}\nCompressed text: {}'.format(text,comp_txt_ls))
+    compressedText=textCompression(text)
+    print('Text: {}\nCompressed text: {}'.format(text,compressedText))
 
 if __name__=='__main__':
     main()
