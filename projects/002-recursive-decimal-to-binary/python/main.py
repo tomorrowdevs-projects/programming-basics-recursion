@@ -17,27 +17,25 @@ Your program should display an appropriate error message if the user enters a ne
 def conv(intuserinput, r, array):
     if intuserinput == 0 or intuserinput == 1:
         array.append(intuserinput)
-        print(intuserinput)
-        userinput = input("Please insert a non-negative decimal number: ")
-        conv(intuserinput, r, array)
+        array.reverse()
+        return array
     elif intuserinput < 0:
         print("ERROR: Insert non-negative number!!!")
-        userinput = input("Please insert a non-negative decimal number: ")
-        conv(intuserinput, r, array)
+        intuserinput = int(input("Please insert a non-negative decimal number: "))
+        return conv(intuserinput, r, array)
     elif intuserinput > 0:
         r = intuserinput % 2
         intuserinput = intuserinput // 2
         array.append(r)
-        conv(intuserinput, r, array)
-    return array
+        return conv(intuserinput, r, array)
 
 def main():
     userinput = input("Please insert a non-negative decimal number: ")
     intuserinput = int(userinput)
     r = 0
     array = []
-    conv(intuserinput, r, array)
-    print(array)
+    x = conv(intuserinput, r, array)
+    print(x)
 
 if __name__ == '__main__':
     main()
