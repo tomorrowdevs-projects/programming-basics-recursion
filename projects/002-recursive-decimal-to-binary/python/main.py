@@ -14,27 +14,30 @@ entered by the user from decimal to binary.
 Your program should display an appropriate error message if the user enters a negative value.
 '''
 
-def conv(userinput):
-    if userinput == "0" or userinput == "1":
-        print(userinput)
+def conv(intuserinput, r, array):
+    if intuserinput == 0 or intuserinput == 1:
+        array.append(intuserinput)
+        print(intuserinput)
         userinput = input("Please insert a non-negative decimal number: ")
-        conv(userinput)
-    elif userinput < 0:
+        conv(intuserinput, r, array)
+    elif intuserinput < 0:
         print("ERROR: Insert non-negative number!!!")
         userinput = input("Please insert a non-negative decimal number: ")
-        conv(userinput)
-    else:
-        n = userinput % 2
-        finalconv(n)
-
-
-def finalconv(n):
-    n // 2
-    finalconv(n)
+        conv(intuserinput, r, array)
+    elif intuserinput > 0:
+        r = intuserinput % 2
+        intuserinput = intuserinput // 2
+        array.append(r)
+        conv(intuserinput, r, array)
+    return array
 
 def main():
     userinput = input("Please insert a non-negative decimal number: ")
-
+    intuserinput = int(userinput)
+    r = 0
+    array = []
+    conv(intuserinput, r, array)
+    print(array)
 
 if __name__ == '__main__':
     main()
