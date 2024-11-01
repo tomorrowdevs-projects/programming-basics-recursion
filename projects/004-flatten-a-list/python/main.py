@@ -36,27 +36,28 @@ Include a main program that demonstrates that your function successfully flatten
 the list shown earlier in this problem, as well as several others.
 '''
 
-def flattening(array):
+def flattening(array, arraylength):
     l1 = []
 
-    if len(array) == 0:
+    if arraylength == 0:
         return array
 
     elif isinstance(array[0], list):
         for n in array[0]:
-            l1 += flattening(n)
+            l1 += flattening(n, arraylength)
 
-        l1 += flattening(array[1:])
+        l1 += flattening(array[1:], arraylength)
 
     else:
         l1.append(array[0])
-        l1 += flattening(array[1:])
+        l1 += flattening(array[1:], arraylength)
 
     return l1
 
 def main():
     array = [[1, 2, [3, 4]], [5, 6], 7]
-    flattening(array)
+    arraylength = len(array)
+    flattening(array, arraylength)
 
 if __name__ == '__main__':
     main()
