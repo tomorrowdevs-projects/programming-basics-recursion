@@ -53,7 +53,10 @@ the project is expected to take about 1 to 2 days to complete.
 '''
 
 def check_environment(catalog):
-    
+    room = input("Please input which room do you want to explore: ")
+    for object in catalog:
+        if object["location"] == room:
+            print(object)
 
 def add_object(catalog):
     name = input("Please input the name of the object: ")
@@ -71,15 +74,28 @@ def change_object(catalog):
             object["category"] = input("Please input new category: ")
             print("Object modified correctly")
             return
-        else:
-            print("Object not found!")
+    print("Object not found\n", catalog)
 
 def delete_object(catalog):
-
+    name = input("Please input the name of which object you would like to delete?\n", catalog)
+    for object in catalog:
+        if object["name"] == name: 
+            catalog.remove(object)
+            print("Object removed correctly")
+            return
+    print("Object not found\n", catalog)
 
 def main():
     catalog = []
-
+    userchoice = input("Please choose one of the following options\n 1. Search\n 2. Add\n 3. Edit\n 4. Delete")
+    if userchoice == "1":
+        check_environment(catalog)
+    elif userchoice == "2":
+        add_object(catalog)
+    elif userchoice == "3":
+        change_object(catalog)
+    elif userchoice == "4":
+        delete_object(catalog)
 
 if __name__ == '__main__':
     main()
