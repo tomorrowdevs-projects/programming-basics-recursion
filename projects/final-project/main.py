@@ -1,521 +1,402 @@
 #--DICTIONARIES INITIALIZATION--#
-HouseDic={} #main dictionary {RoomName:{Obj:[Obj]|None}} (None if the object can contain nothing)
-RoomIdDic={} #dictionary used to map RoomName to RoomId (this app can be used only from command line, so enter a number it's better than enter a name)
-ObjIdDic={}
+roomIdDict={}   #{roomId:roomName}
+objIdDict={}    #{objId:{name:objName,place:objPlace,container:True/False}}
 
-def PrintIdDic(IdDic):
+def printIdDict(idDict,idList=None):
     #--OBTAINING PADDING VALUES--#
-    MaxIdLen=0
-    MaxNameLen=0
-    for Id in list(IdDic.keys()):
-        if len(Id)>MaxIdLen:
-            MaxIdLen=len(str(Id))
-        
-        Name=IdDic[Id]['Name']
-        if len(Name)>MaxNameLen:
-            MaxNameLen=len(Name)
-
-    #--BUILDING STRING TO BE PRINTED--#
-    StrToPrint=''
-    for Id in IdDic:
-        Name=IdDic[Id]['Name']
-        Str='ID: {:>'+str(MaxIdLen)+'} - NAME: {:>'+str(MaxNameLen)+'}\n'
-        StrToPrint=StrToPrint+Str.format(Id,Name)
-    print(StrToPrint)
-
-def PrintMainDic(MainDic,IdDic):
-    #--OBTAINING PADDING VALUES--#
-    MaxIdLen=0
-    MaxNameLen=0
-    for Id in list(MainDic.keys()):
-        if len(Id)>MaxIdLen:
-            MaxIdLen=len(str(Id))
-    
-        Name=IdDic[Id]['Name']
-        if len(Name)>MaxNameLen:
-            MaxNameLen=len(Name)
-
-    #--BUILDING STRING TO BE PRINTED--#
-    StrToPrint=''
-    for Id in MainDic:
-        if Id in IdDic:
-            Name=IdDic[Id]['Name']
-            Str='ID: {:>'+str(MaxIdLen)+'} - NAME: {:>'+str(MaxNameLen)+'}\n'
-            StrToPrint=StrToPrint+Str.format(Id,Name)
-    print(StrToPrint)
-
-def Explore(MainDic,RootDic={None:HouseDic},Id=None):
-    if Id!=None:
-        RootDic[Id]=MainDic
-
-    if len(MainDic)>0:
-        if 'R' in list(MainDic.keys())[0]:
-            IdDic=RoomIdDic
-        else:
-            IdDic=ObjIdDic
-
-    if len(MainDic)>0:
-        print("""Here's the content of the room\object:""")
-        PrintMainDic(MainDic,IdDic)
-        
-        if len(RootDic)>1:
-            print('You can:\n- go on with exploring [1]\n- main menu [2]\n- go back to the upper level [3]')
-            Operation=input('Enter the number of the operation to perform: ')
-            while not Operation in ['1','2','3']:
-                Operation=input('Sorry! Wrong input, retry: ')
-        else:
-            print('You can:\n- go on with exploring [1]\n- main menu [2]')
-            Operation=input('Enter the number of the operation to perform: ')
-            while not Operation in ['1','2']:
-                Operation=input('Sorry! Wrong input, retry: ')
-        
-        if Operation=='1':
-            Id=input('Please, enter the ID of the object or room you want to explore: ')
-            while not Id in MainDic:
-                Id=input('Wrong input! Please, retry: ')
-            Content=MainDic[Id]
-            if type(Content)==dict:
-                RootDic[Id]=Content
-                return Explore(Content,RootDic)
-            else:
-                print("""This object can contain nothing""")
-                if len(RootDic)>1:
-                    print('You can:\n- go back to the upper level [1]\n- main menu [2]\n- explore other objects in the current place [3]')
-                    Operation=input('Enter the number of the operation to perform: ')
-                    while not Operation in ['1','2','3']:
-                        Operation=input('Sorry! Wrong input, retry: ')
-
-                    if Operation=='1':
-                        RootDic.pop(list(RootDic.keys())[-1])
-                        Id=list(RootDic.keys())[-1]
-                        return Explore(RootDic[Id],RootDic)
-                    elif Operation=='2':
-                        return None, None
-                    else:
-                        return Explore(MainDic,RootDic)
-                else:
-                    print('You can:\n- go back to the room list [1]\n- main menu [2]\n- explore other objects in the current place [3]')
-                    Operation=input('Enter the number of the operation to perform: ')
-                    while not Operation in ['1','2','3']:
-                        Operation=input('Sorry! Wrong input, retry: ')
-                    
-                    if Operation=='1':
-                        Id=list(RootDic.keys())[-1]
-                        Place=RootDic[Id]
-                        return Explore(Place,RootDic)
-                    elif Operation=='2':
-                        return None, None
-                    else:
-                        return Explore(MainDic,RootDic)
-        elif Operation=='2':
-            Id=list(RootDic.keys())[-1]
-            Place=RootDic[Id]
-            return Place,Id
-        else:
-            RootDic.pop(list(RootDic.keys())[-1])
-            Id=list(RootDic.keys())[-1]
-            return Explore(RootDic[Id],RootDic)
+    maxIdLen=0
+    maxNameLen=0
+    if idList==None:
+        idList=list(idDict.keys())
     else:
-        print('The room or the object is empty')
-        if len(RootDic)>1:
-            print('You can:\n- go back to the upper level [1]\n- main menu [2]\n')
-            Operation=input('Enter the number of the operation to perform: ')
-            while not Operation in ['1','2']:
-                Operation=input('Sorry! Wrong input, retry: ')
+        idList.sort()
 
-            if Operation=='1':
-                RootDic.pop(list(RootDic.keys())[-1])
-                Id=list(RootDic.keys())[-1]
-                Place=RootDic[Id]
-                return Explore(Place,RootDic)
+    if len(idList)>0:
+        for key in idList:
+            if len(key)>maxIdLen:
+                maxIdLen=len(key)
+            
+            if 'R' in key:
+                value=idDict[key]
+                if len(value)>maxNameLen:
+                    maxNameLen=len(value)
             else:
-                Id=list(RootDic.keys())[-1]
-                Place=RootDic[Id]
-                return Place,Id
+                value=idDict[key]['name']
+                if len(value)>maxNameLen:
+                    maxNameLen=len(value)
+            
+        #--BUILDING STRING TO BE PRINTED--#
+        strToPrint=''
+        for id in idList:
+            if 'R' in id:
+                name=idDict[id]
+                strToPrint='ID: {:>'+str(maxIdLen)+'} - NAME: {:>'+str(maxNameLen)+'}\n'
+                print(strToPrint.format(id,name))
+            else:
+                name=idDict[id]['name']
+                if objIdDict[id]['container']:
+                    container='yes'
+                else:
+                    container='no'
+                strToPrint='ID: {:>'+str(maxIdLen)+'} - NAME: {:>'+str(maxNameLen)+'} - CONTAINER: {:>3}\n'
+                print(strToPrint.format(id,name,container))
+    else:
+        print('The room or the object is empty!')
+        
+def dictContent(id,subObjResearch=False,keyList=None,contentList=None,containerList=None,passedIdList=None):
+    if contentList==None:
+        contentList=[]
+        keyList=list(objIdDict.keys())
+        containerList=[]
+
+    if passedIdList==None:
+        passedIdList=[]
+
+    currentKey=keyList.pop(0)
+    keyList.append(currentKey)
+    if not currentKey in passedIdList:
+        passedIdList.append(currentKey)
+        if objIdDict[currentKey]['place']==id:
+            contentList.append(currentKey)
+            if subObjResearch and objIdDict[currentKey]['container']:
+                containerList.append(currentKey)     
+        return dictContent(id,subObjResearch,keyList,contentList,containerList,passedIdList)
+    else:
+        if len(containerList)>0:
+            currentContainer=containerList.pop(0)
+            return dictContent(currentContainer,subObjResearch,keyList,contentList,containerList,passedIdList=None)
         else:
-            print('You can:\n- go back to the room list [1]\n- main menu [2]\n')
-            Operation=input('Enter the number of the operation to perform: ')
-            while not Operation in ['1','2']:
-                Operation=input('Sorry! Wrong input, retry: ')
+            return contentList
 
-            if Operation=='1':
-                Id=list(RootDic.keys())[-1]
-                Place=RootDic[Id]
-                return Explore(Place,RootDic)
+def explore(placeId=None):
+    if placeId==None:
+        print("""Here's the list of the rooms ids:""")
+        printIdDict(roomIdDict)
+        print("""Here's the list of the objects ids:""")
+        printIdDict(objIdDict)
+        placeId=input("""Enter the id of the object or the room that you want to explore: """)
+        while not (placeId in roomIdDict or placeId in objIdDict):
+            placeId=input("""Wrong input, retry: """)
+    else:
+        if (not 'R' in placeId and objIdDict[placeId]['container']) or 'R' in placeId:
+            contentList=dictContent(placeId)
+            if len(contentList)>0:
+                print("""Here's the content of the selected room/object: """)
+                printIdDict(objIdDict,contentList)
+                if 'R' in placeId:
+                    operation=input('What do you want to do?\n- choose another room or object [1]\n- go to main menu [2]\n- choose one of these objects [3]')
+                    while not operation in ['1','2','3']:
+                        operation=input('Wrong input, retry: ')
+                else:
+                    operation=input('What do you want to do?\n- choose another room or object [1]\n- go to main menu [2]\n- choose one of these objects [3]\n- go to the upper level [4]')
+                    while not operation in ['1','2','3','4']:
+                        operation=input('Wrong input, retry: ')
+                
+                if operation=='1':
+                    explore()
+                elif operation=='2':
+                    pass
+                elif operation=='3':
+                    placeId=input('Choose one of the previous ids: ')
+                    while not placeId in contentList:
+                        placeId=input('Wrong input, retry: ')
+                    explore(placeId)
+                else:
+                    placeId=objIdDict[placeId]['place']
+                    explore(placeId)
             else:
-                Id=list(RootDic.keys())[-1]
-                Place=RootDic[Id]
-                return Place,Id
+                print("""The room or the object is empty!""")
+                if 'R' in placeId:
+                    operation=input('What do you want to do?\n- choose another room or object [1]\n- go to main menu [2]')
+                    while not operation in ['1','2']:
+                        operation=input('Wrong input, retry: ')
+                else:
+                    operation=input('What do you want to do?\n- choose another room or object [1]\n- go to main menu [2]\n- go to the upper level [3]')
+                    while not operation in ['1','2','3']:
+                        operation=input('Wrong input, retry: ')
+                
+                if operation=='1':
+                    explore()
+                elif operation=='2':
+                    pass
+                else:
+                    placeId=objIdDict[placeId]['place']
+                    explore(placeId)
+        else:
+            print("""The object can contain nothing!""")
+            operation=input('What do you want to do?\n- choose another room or object [1]\n- go to main menu [2]\n- go to the upper level [3]')
+            while not operation in ['1','2','3']:
+                operation=input('Wrong input, retry: ')
+            
+            if operation=='1':
+                explore()
+            elif operation=='2':
+                pass
+            else:
+                placeId=objIdDict[placeId]['place']
+                explore(placeId)
 
-def AddRoom():
-    RoomName=input('Please, enter the name of the room to be added: ')
-    if len(HouseDic)>0:
-        for Id in RoomIdDic:
-            if RoomName==RoomIdDic[Id]['Name']:
-                print('Warning: room already inserted! Retry!')
+def addRoom():
+    roomName=input('Please, enter the name of the room to be added: ')
+    while roomName in list(roomIdDict.values()):
+        roomName=input('Name already used, retry: ')
 
     #SAVING ROOM INFO TO THE HOUSE DIC                
-    if len(RoomIdDic)==0:
-        RoomIdDic['R1']={'Name':RoomName}
+    if len(roomIdDict)==0:
+        roomIdDict['R1']=roomName
     else:
-        RoomId=int(list(RoomIdDic.keys())[-1].replace('R',''))+1
-        RoomId='R'+str(RoomId)
-        RoomIdDic[RoomId]={'Name':RoomName}
-    HouseDic[RoomId]={}
-    print(HouseDic)
+        roomId=int(list(roomIdDict.keys())[-1].replace('R',''))+1
+        roomId='R'+str(roomId)
+        roomIdDict[roomId]=roomName
+    printIdDict(roomIdDict)
 
-def DicContent(MainDic):
-    Content=[]
-    for Id in MainDic:
-        if type(MainDic[Id])==dict:
-            if len(MainDic[Id])>0:
-                Content.append(Id)
-                Content=Content+DicContent(MainDic[Id])
-            else:
-                Content.append(Id)
-        else:
-            Content.append(Id)
-    return Content 
-
-def DeleteRoom():
+def deleteRoom():
     #ASKING FOR ROOM ID TO DELETE
-    PrintIdDic(RoomIdDic)
-    RoomId=input('Enter the ID relevant to the room to be deleted: ')
-    while not RoomId in list(RoomIdDic.keys()):
-        RoomId=input('Wrong input! Retry: ')
+    printIdDict(roomIdDict)
+    roomId=input('Enter the ID relevant to the room to be deleted: ')
+    while not roomId in list(roomIdDict.keys()):
+        roomId=input('Wrong input! Retry: ')
     
-    if len(HouseDic[RoomId])>0:
+    roomContent=dictContent(roomId)
+    if len(roomContent)>0:
         print('Warning! Room is not empty! Do you really want to delete it? You will lost every item in it!')
-        Operation=input('You can:\n- abort the deletion [1]\n- perform the deletion [2]\n- transfer the item to another room and perform the deletion [3]\nEnter the number of operation you want to perform: ')
-        while not Operation in ['1','2','3']:
-            Operation=input('Wrong input! Retry: ')
+        operation=input('You can:\n- abort the deletion [1]\n- perform the deletion [2]\n- transfer the items to another room and perform the deletion [3]\nEnter the number of operation you want to perform: ')
+        while not operation in ['1','2','3']:
+            operation=input('Wrong input! Retry: ')
     else:
-        Operation=input('You can:\n- abort the deletion [1]\n- perform the deletion [2]\nEnter the number of operation you want to perform: ')
-        while not Operation in ['1','2']:
-            Operation=input('Wrong input! Retry: ')
+        operation=input('You can:\n- abort the deletion [1]\n- perform the deletion [2]\nEnter the number of operation you want to perform: ')
+        while not operation in ['1','2']:
+            operation=input('Wrong input! Retry: ')
 
-    if Operation=='1':
+    if operation=='1':
         print('Deletion aborted!')
         pass
-    elif Operation=='2':
-        Content=DicContent(HouseDic[RoomId])
-        for ObjId in Content:
-            ObjIdDic.pop(ObjId)
-        RoomIdDic.pop(RoomId)
-        HouseDic.pop(RoomId)
+    elif operation=='2':
+        roomContent=dictContent(roomId,subObjResearch=True)
+        for objId in roomContent:
+            del(objIdDict[objId])
+        del(roomIdDict[roomId])
     else:
-        PrintIdDic(RoomIdDic)
-        DestRoomId=input('Enter the ID relevant to the room where you want to transfer the items: ')
-        while not DestRoomId in RoomIdDic or DestRoomId==RoomId:
-            DestRoomId=input('Wrong input! Retry: ')
-        HouseDic[DestRoomId].update(HouseDic[RoomId])
-        Content=DicContent(HouseDic[RoomId])
-        for ObjId in Content:
-            ObjIdDic[ObjId]['Place']=DestRoomId
-        RoomIdDic.pop(RoomId)
-        HouseDic.pop(RoomId)
+        newRoomId=input('Enter the id of the destination room: ')
+        while newRoomId==roomId or not newRoomId in roomIdDict:
+            newRoomId=input('Wrong input, retry: ')
 
-def ModifyRoom():
+        for objId in roomContent:   
+            objIdDict[objId]['place']=newRoomId
+
+def modifyRoom():
     #ASKING FOR ROOM ID TO MODIFY
-    PrintIdDic(RoomIdDic)
-    RoomId=input('Enter the ID relevant to the room to be modified: ')
-    while not RoomId in list(RoomIdDic.keys()):
-        RoomId=input('Wrong input! Retry: ')
-    NewRoomName=input('Please, enter the new name of the room: ')
-    for Id in RoomIdDic:
-            if NewRoomName==RoomIdDic[Id]['Name']:
-                print('Warning: room already inserted! Retry!')
-    RoomIdDic[RoomId]['Name']=NewRoomName  
+    printIdDict(roomIdDict)
+    roomId=input('Enter the ID relevant to the room to be modified: ')
+    while not roomId in list(roomIdDict.keys()):
+        roomId=input('Wrong input! Retry: ')
+    
+    newRoomName=input('Please, enter the new name of the room: ')
+    while newRoomName in list(roomIdDict.values()):
+        newRoomName=input('Name already used, retry: ')
+    roomIdDict[roomId]=newRoomName  
 
-def SetHouseRooms():
-    if len(HouseDic)==0:
+def setHouseRooms():
+    if len(roomIdDict)==0:
         #--ASK FOR THE INSERTION MODE--#
-        StdHouseRooms=['Entrance','Stay','Kitchen','Bathroom','Bedroom','Studio']
-        print("""Here's a standard house room list: {}""".format(' - '.join(StdHouseRooms)))
+        stdHouseRooms=['Entrance','Stay','Kitchen','Bathroom','Bedroom','Studio']
+        print("""Here's a standard house room list: {}""".format(' - '.join(stdHouseRooms)))
         print('If the previous list fits your home, then enter 1. If you want to enter manually your rooms, then enter 2.')
-        SetHouseMode=input('Please, enter the number of operation you want to perform: ')
-        while not SetHouseMode in ['1','2']:
-            SetHouseMode=input('Wrong, input! Retry: ')
+        setHouseMode=input('Please, enter the number of operation you want to perform: ')
+        while not setHouseMode in ['1','2']:
+            setHouseMode=input('Wrong, input! Retry: ')
     else:
         SetHouseMode='2'
       
     #--PERFORMING INSERTION--#
     if SetHouseMode=='1':
-        for Room,Id in zip(StdHouseRooms,range(1,len(StdHouseRooms)+1)):
-            HouseDic['R'+str(Id)]={}
-            RoomIdDic['R'+str(Id)]={'Name':Room}
-        PrintIdDic(RoomIdDic)
-        return HouseDic,RoomIdDic
+        for Room,Id in zip(stdHouseRooms,range(1,len(stdHouseRooms)+1)):
+            roomIdDict['R'+str(Id)]={'name':Room}
+        printIdDict(roomIdDict)
     else:
         Operation=''
         while Operation!='0':
-            if len(HouseDic)==0:
+            if len(roomIdDict)==0:
                 Operation=input('You can:\n- Add a room [1]\n- Exit [0]\nEnter the number of the operation you want to perform: ')
                 while not Operation in ['0','1']:
                     Operation=input('Wrong input! Retry: ')
             else:
-                PrintIdDic(RoomIdDic)
+                printIdDict(roomIdDict)
                 Operation=input('You can:\n- Add a room [1]\n- Delete a room [2]\n- Modify a room [3]\n- Exit [0]\nEnter the number of the operation you want to perform: ')
                 while not Operation in ['0','1','2','3']:
                     Operation=input('Wrong input! Retry: ')
 
-            
             if Operation=='1':
-                AddRoom()
+                addRoom()
             elif Operation=='2':
-                DeleteRoom()
+                deleteRoom()
             elif Operation=='3':
-                ModifyRoom()
-        PrintIdDic(RoomIdDic)
+                modifyRoom()
+        printIdDict(roomIdDict)
 
-def RootFinder(Id):
-    if 'R' in Id:
-        return Id
+def addObject():
+    objName=input('Please, enter the name of the object to be added: ')          
+    if len(objIdDict)==0:
+        objId='O1'
+        objIdDict[objId]={'name':objName}
     else:
-        RootList=[]
-        ContainerId=ObjIdDic[Id]['Place']
-        RootList.append(ContainerId)
-        if 'R' in ContainerId:
-            return RootList
-        else:
-            return RootList+RootFinder(ContainerId)
-
-def GoToRoot(RootList):
-    Container=HouseDic
-    for Id in RootList:
-        Container=Container[Id]
-    return Container
-
-def AddObject():
-    ObjName=input('Please, enter the name of the object to be added: ')
-    #SAVING OBJECT INFO TO THE HOUSE DIC                
-    if len(ObjIdDic)==0:
-        ObjId='O1'
-        ObjIdDic[ObjId]={'Name':ObjName}
-    else:
-        ObjId=list(ObjIdDic.keys())[-1].replace('O','')
-        ObjId='O'+str(int(ObjId)+1)
-        ObjIdDic[ObjId]={'Name':ObjName}
-    Operation=input('If the object can contain other object input 1, otherwise input 2: ')
-    while not Operation in ['1','2']:
-        Operation=input('Sorry, wrong input! Retry: ')
+        objId=list(objIdDict.keys())[-1].replace('O','')
+        objId='O'+str(int(objId)+1)
+        objIdDict[objId]={'name':objName}
+    operation=input('If the object can contain other object input 1, otherwise input 2: ')
+    while not operation in ['1','2']:
+        operation=input('Sorry, wrong input! Retry: ')
     
-    if Operation=='1':
-        IsObjContainer=True
+    if operation=='1':
+        objIdDict[objId]['container']=True
     else:
-        IsObjContainer=False
-    PrintIdDic(RoomIdDic)
-    RoomId=input('Please, enter the id of the room where you want to put the object: ')
-    if len(HouseDic[RoomId])>0:
-        print('Do you want to put the object in the room [1] or into an object inside the room [2]?')
-        Operation=input('Enter the number of the operation you want to perform: ')
-        while not Operation in ['1','2']:
-            Operation=input('Sorry, wrong input! Retry: ')
-        
-        if Operation=='1':
-            if IsObjContainer:
-                HouseDic[RoomId][ObjId]={}
-                ObjIdDic[ObjId]['Container']=True
-            else:
-                HouseDic[RoomId][ObjId]=None
-                ObjIdDic[ObjId]['Container']=False
-            ObjIdDic[ObjId]['Place']=RoomId
-        else:
-            Container,ContainerId=Explore(HouseDic[RoomId],Id=RoomId)
-            while Container==None or ContainerId==None:
-                print("You can't place the object here. Please, retry.")
-                Container,ContainerId=Explore(HouseDic[RoomId],Id=RoomId)
-            
-            if IsObjContainer:
-                Container[ObjId]={}
-            else:
-                Container[ObjId]=None
-            ObjIdDic[ObjId]['Place']=ContainerId
-    else:
-        if IsObjContainer:
-            HouseDic[RoomId][ObjName]={}
-            ObjIdDic[ObjId]['Container']=True
-        else:
-            HouseDic[RoomId][ObjName]=None
-            ObjIdDic[ObjId]['Container']=False
-        ObjIdDic[ObjId]['Place']=RoomId
+        objIdDict[objId]['container']=False
+    
+    print("""Here's the list of the rooms ids:""")
+    printIdDict(roomIdDict)
+    print("""Here's the list of the objects ids:""")
+    printIdDict(objIdDict)
+    placeId=input('Please, enter the id of the room or the object where you want to put the object: ')
+    while not placeId in roomIdDict and not placeId in objIdDict:
+        placeId=input('Wrong input, retry: ')
 
-def ModifyObject():
-    PrintIdDic(ObjIdDic)
-    ObjId=input('Please, enter the id of the object to be modified: ')
+    if not 'R' in placeId:
+        while not objIdDict[placeId]['container']:
+            print("""The object selected can contain nothing""")
+            operation=input('What you want to do:\n- select another place [1]\n- main menu [2]')
+            while not operation in ['1','2']:
+                operation=input('Wrong input, retry: ')
+            if operation=='1':
+                placeId=input('Please, enter the id of the room or the object where you want to put the object: ')
+                while not placeId in roomIdDict and not placeId in objIdDict:
+                    placeId=input('Wrong input, retry: ')
+            else:
+                del(objIdDict[objId])
+                return
+    objIdDict[objId]['place']=placeId
+              
+def modifyObject():
+    printIdDict(objIdDict)
+    objId=input('Please, enter the id of the object to be modified: ')
     print("What you want to modify?\n- name [1]\n- place [2]\n- holding capability [3]")
-    Operation=input('Enter the number of the operation to perform: ')
-    while not Operation in ['1','2','3']:
-        Operation=input('Sorry! Wrong input, retry: ')
+    operation=input('Enter the number of the operation to perform: ')
+    while not operation in ['1','2','3']:
+        operation=input('Sorry! Wrong input, retry: ')
     
-    if Operation=='1':
-        Name=input('Enter the new name of the object: ')
-        ObjIdDic[ObjId]['Name']=Name
-    elif Operation=='2':
-        PrintIdDic(RoomIdDic)
-        DestRoomId=input('Enter the destination room id: ')
-        if len(HouseDic[DestRoomId])>0:
-            print('Do you want to put the object in the room [1] or into an object inside the room [2]?')
-            Operation=input('Enter the number of the operation you want to perform: ')
-            while not Operation in ['1','2']:
-                Operation=input('Sorry, wrong input! Retry: ')
-            
-            if Operation=='1':
-                if ObjIdDic[ObjId]['Container']:
-                    HouseDic[DestRoomId][ObjId]={}
+    if operation=='1':
+        name=input('Enter the new name of the object: ')
+        objIdDict[objId]['name']=name
+    elif operation=='2':
+        print("""Here's the list of the rooms ids:""")
+        printIdDict(roomIdDict)
+        print("""Here's the list of the objects ids:""")
+        printIdDict(objIdDict)
+        placeId=input('Please, enter the id of the room or the object where you want to put the object: ')
+        while not placeId in roomIdDict and not placeId in objIdDict:
+            placeId=input('Wrong input, retry: ')
+
+        if not 'R' in placeId:
+            while not objIdDict[placeId]['container']:
+                print("""The object selected can contain nothing""")
+                operation=input('What you want to do:\n- select another place [1]\n- main menu [2]')
+                while not operation in ['1','2']:
+                    operation=input('Wrong input, retry: ')
+                if operation=='1':
+                    placeId=input('Please, enter the id of the room or the object where you want to put the object: ')
+                    while not placeId in roomIdDict or not placeId in objIdDict:
+                        placeId=input('Wrong input, retry: ')
                 else:
-                    HouseDic[DestRoomId][ObjId]=None
-                ObjIdDic[ObjId]['Place']=DestRoomId
-            else:
-                Container,ContainerId=Explore(HouseDic[DestRoomId],Id=ObjIdDic)
-                while Container==None or ContainerId==None:
-                    print("You can't place the object here. Please, retry.")
-                    Container,ContainerId=Explore(HouseDic[DestRoomId],Id=ObjIdDic)
-                
-                if ObjIdDic[ObjId]['Container']:
-                    Container[ObjId]={}
-                else:
-                    Container[ObjId]=None
-                ObjIdDic[ObjId]['Place']=ContainerId
-        else:
-            if ObjIdDic[ObjId]['Container']:
-                HouseDic[DestRoomId][ObjId]={}
-            else:
-                HouseDic[DestRoomId][ObjId]=None
-            ObjIdDic[ObjId]['Place']=DestRoomId
+                    return
+        objIdDict[objId]['place']=placeId
     else:
-        RootList=RootFinder(ObjId)
-        RootList.reverse()
-        Container=GoToRoot(RootList)
-        if ObjIdDic[ObjId]['Container']:
-            if len(Container[ObjId])>0:
+        if objIdDict[objId]['container']:
+            contentList=dictContent(objId)
+            if len(contentList)>0:
                 Operation=input('The object contains other objects! Do you want to move all the objects (1) or you want to abort (2)?')
                 while not Operation in ['1','2']:
                     print('Wrong input, retry!')
                     Operation=input('The object contains other objects! Do you want to move all the objects (1) or you want to abort (2)?')
-                
+                    
                 if Operation=='1':
-                    PrintIdDic(RoomIdDic)
-                    PrintIdDic(ObjIdDic)
-                    DestId=input('Enter the id of the destination place: ')
-                    if 'R' in DestId:
-                        NewPlace=HouseDic[DestId]
+                    printIdDict(roomIdDict)
+                    printIdDict(objIdDict)
+                    destId=input('Enter the id of the destination place: ')
+                    if 'R' in destId:
+                        for id in contentList:
+                            objIdDict[id]['place']=destId
                     else:
-                        NewRootList=RootFinder(DestId)
-                        NewPlace=GoToRoot(NewRootList)[DestId]
-                        while type(NewPlace)!=dict:
+                        while not objIdDict[destId]['container']:
                             print('You choosed a non container object, please retry!')
-                            DestId=input('Enter the id of the destination place: ')
-                            NewRootList=RootFinder(DestId)
-                            NewPlace=GoToRoot(NewRootList)[DestId]
-                    for Id in Container[ObjId]:
-                        ObjIdDic[Id]['Place']=DestId
-                    NewPlace.update(Container[ObjId])
-                    Container[ObjId]=None
-                    ObjIdDic[ObjId]['Container']=False
+                            destId=input('Enter the id of the destination place: ')
+                        for id in contentList:
+                            objIdDict[id]['place']=destId
                 else:
                     print('Modification aborted!')
                     pass
-            else:
-                Container[ObjId]=None
-                ObjIdDic[ObjId]['Container']=False
+            objIdDict[objId]['container']=False
         else:
-            RootList=RootFinder(ObjId)
-            RootList.reverse()
-            Container=GoToRoot(RootList)
-            Container[ObjId]={}
-            ObjIdDic[ObjId]['Container']=True
+            objIdDict[objId]['container']=True
 
-def DeleteObject(ObjId=None):
-    if ObjId==None:
-        PrintIdDic(ObjIdDic)
-        ObjId=input('Please, enter the id of the object to be deleted: ')
-        while not ObjId in ObjIdDic:
-            Operation=input('Sorry! Wrong input, retry: ')
-            ObjId=input('Please, enter the id of the object to be deleted: ')
-    
-    RootList=RootFinder(ObjId)
-    RootList.reverse()
-    Container=GoToRoot(RootList)
-    if ObjIdDic[ObjId]['Container']:
-        if len(Container[ObjId])>0:
-            Operation=input('The object is not empty! You can:\n- move all objects to another place [1]\n- delete the object and its content [2]\n- abort the deletion [3]\nEnter ther number of the operation you want to perform: ')
-            while not Operation in ['1','2','3']:
-                print('Wrong input, retry!')
-                Operation=input('The object is not empty! You can:\n- move all objects to another place [1]\n- delete the object and its content [2]\n- abort the deletion [3]\nEnter ther number of the operation you want to perform: ')
-            
-            if Operation=='1':
-                PrintIdDic(RoomIdDic)
-                PrintIdDic(ObjIdDic)
-                DestId=input('Enter the id of the destination place: ')
-                if 'R' in DestId:
-                    NewPlace=HouseDic[DestId]
-                else:
-                    NewRootList=RootFinder(DestId)
-                    NewPlace=GoToRoot(NewRootList)[DestId]
-                    while type(NewPlace)!=dict:
-                        print('You choosed a non container object, please retry!')
-                        DestId=input('Enter the id of the destination place: ')
-                        NewRootList=RootFinder(DestId)
-                        if 'R' in DestId:
-                            NewPlace=HouseDic[DestId]
-                        else:
-                            NewPlace=GoToRoot(NewRootList)[DestId]
-                for Id in Container[ObjId]:
-                    ObjIdDic[Id]['Place']=DestId
-                NewPlace.update(Container[ObjId])
-                del(ObjIdDic[ObjId])
-                del(Container[ObjId])
-            elif Operation=='2':
-                Content=DicContent(Container[ObjId])
-                for Id in Content:
-                    del(ObjIdDic[Id])
-                del(ObjIdDic[ObjId])
-                del(Container[ObjId])
+def deleteObject():
+    objId=input('Enter the id of the object to be deleted: ')
+    contentList=dictContent(objId,subObjResearch=True)
+    if len(contentList)>0:
+        operation=input('The object is not empty! You can:\n- move all objects to another place [1]\n- delete the object and its content [2]\n- abort the deletion [3]\nEnter ther number of the operation you want to perform: ')
+        while not operation in ['1','2','3']:
+            print('Wrong input, retry!')
+            operation=input('The object is not empty! You can:\n- move all objects to another place [1]\n- delete the object and its content [2]\n- abort the deletion [3]\nEnter ther number of the operation you want to perform: ')
+        
+        if operation=='1':
+            printIdDict(roomIdDict)
+            printIdDict(objIdDict)
+            placeId=input('Please, enter the id of the room or the object where you want to put the object: ')
+            while not placeId in roomIdDict and not placeId in objIdDict:
+                placeId=input('Wrong input, retry: ')
+
+            if not 'R' in placeId:
+                while not objIdDict[placeId]['container']:
+                    print("""The object selected can contain nothing""")
+                    operation=input('What you want to do:\n- select another place [1]\n- main menu [2]')
+                    while not operation in ['1','2']:
+                        operation=input('Wrong input, retry: ')
+                    if operation=='1':
+                        placeId=input('Please, enter the id of the room or the object where you want to put the object: ')
+                        while not placeId in roomIdDict or not placeId in objIdDict:
+                            placeId=input('Wrong input, retry: ')
+                        for id in contentList:
+                            objIdDict[id]['place']=placeId
+                    else:
+                        return
             else:
-                print('Deletion aborted!')
-                pass
+                for id in contentList:
+                    objIdDict[id]['place']=placeId
+            del(objIdDict[objId])
+        elif operation=='2':
+            for id in contentList:
+                del(objIdDict[id])
+            del(objIdDict[objId])
         else:
-            del(ObjIdDic[ObjId])
-            del(Container[ObjId])
+            print('Deletion aborted!')
+            pass
     else:
-        RootList=RootFinder(ObjId)
-        RootList.reverse()
-        Container=GoToRoot(RootList)
-        del(ObjIdDic[ObjId])
-        del(Container[ObjId])
+        del(objIdDict[objId])
 
 def main():
-    # print('HOUSEHOLD CATALOG MANAGER')
-    # SetHouseRooms()
-    # Operation=''
-    # Operation=input('You can:\n- Explore house [1]\n- Modify rooms [2]\n- Add an object [3]\n- Modify an object [4]\n- Delete an object [5]\n\nChoose the operation you want to perform or enter 0 to exit: ')
-    # while not Operation=='0':
-    #     if Operation=='1':
-    #         Explore(HouseDic)
-    #     elif Operation=='2':
-    #         SetHouseRooms()
-    #     elif Operation=='3':
-    #         AddObject()
-    #     elif Operation=='4':
-    #         ModifyObject()
-    #     else:
-    #         DeleteObject()
-
-    SetHouseRooms()
-    HouseDic['R2']['O1']={}
-    ObjIdDic['O1']={'Name':'FirstObj','Place':'R2','Container':True}
-    HouseDic['R3']['O2']=None
-    ObjIdDic['O2']={'Name':'SecondObj','Place':'R3','Container':False}
-    HouseDic['R2']['O1']['O3']={}
-    ObjIdDic['O3']={'Name':'ThirdObj','Place':'O1','Container':True}
-    HouseDic['R2']['O1']['O3']['O4']=None
-    ObjIdDic['O4']={'Name':'FourthObj','Place':'O3','Container':False}
-    print(HouseDic)
-    Content=DicContent(HouseDic['R2'])
-    DeleteObject()
-    print(HouseDic)
-    print(ObjIdDic)
+    print('HOUSEHOLD CATALOG MANAGER')
+    setHouseRooms()
+    Operation=''
+    Operation=input('You can:\n- Explore house [1]\n- Modify rooms [2]\n- Add an object [3]\n- Modify an object [4]\n- Delete an object [5]\n\nChoose the operation you want to perform or enter 0 to exit: ')
+    while not Operation=='0':
+        if Operation=='1':
+            explore()
+        elif Operation=='2':
+            setHouseRooms()
+        elif Operation=='3':
+            addObject()
+        elif Operation=='4':
+            modifyObject()
+        else:
+            deleteObject()
 
 if __name__=='__main__':
     main()
